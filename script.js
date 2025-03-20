@@ -2,8 +2,36 @@ const nivelElemento = document.querySelector('.nivel');
 const textoNivel = document.getElementById('nivel-texto');
 const botao = document.querySelector('button');
 
+async function atualizarNivel() {
+    try {
+        const res = await fetch('https://lixeira-back.vercel.app/api/nivel');
+
+        if (!res.ok) {
+            console.error('Erro ao buscar o nível da lixeira');
+            return;
+        }
+
+        const data = await res.json();
+        let nivel = data.nivel; // Nível recebido da API
+
+        console.log('Nível atual da lixeira:', nivel);
+
+        nivelElemento.style.height = `${nivel}%`;
+        textoNivel.innerText = `Nível: ${nivel}%`;
+
+        if (nivel >= 80 && nivel <= 90) {
+            nivelElemento.style.background = "#FF4500";
+        } else if (nivel > 90) {
+            nivelElemento.style.background = "red";
+        } else {
+            nivelElemento.style.background = "green";
+        }
+    } catch (error) {
+        console.error('Erro ao buscar o nível:', error);
+    }
+}
+
 async function aumentarNivel() {
-    // Chamada para a API para obter o nível atual
     const res = await fetch('https://lixeira-back.vercel.app/api/nivel');
     
     if (!res.ok) {
@@ -12,15 +40,13 @@ async function aumentarNivel() {
     }
 
     const data = await res.json();
-    let nivel = data.nivel;  // A propriedade 'nivel' vem da resposta da API
+    let nivel = data.nivel;  
     
-    // Verifique se o valor de 'nivel' está correto antes de continuar
     console.log('Nível atual da lixeira:', nivel);
 
     if (nivel < 100) {
         nivel += 10;
 
-        // Enviar a atualização do nível para o backend
         await fetch('https://lixeira-back.vercel.app/api/aumentarNivel', {
             method: 'POST',
             headers: {
@@ -57,3 +83,6 @@ async function esvaziarLixeira() {
     textoNivel.innerText = `Nível: 0%`;
     nivelElemento.style.background = "green";
 }
+
+// Atualiza o nível ao carregar a página
+window.onload = atualizarNivel;
